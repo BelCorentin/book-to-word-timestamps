@@ -1,6 +1,10 @@
 import whisper_timestamped
 from trigger_gen import Parser
 
+import sys
+sys.path.append('./trigger_gen')
+import trigger_gen
+
 def test_init1():
     assert help(whisper_timestamped) != None
 

@@ -86,19 +86,23 @@ from pathlib import Path
 import pandas as pd
 
 from typing import Dict, List, Tuple
+import typing as tp
 from pydantic import BaseModel
 
 import whisper_timestamped as whisper
 
-from defaults import DATA_DIR, OUTPUT_DIR, TEXT_DIR, WAV_DIR
+from .defaults import DATA_DIR, OUTPUT_DIR, TEXT_DIR, WAV_DIR
 
-class Parser:
+class Parser():
 
     output_path: Path
     audio_path: Path
+    language: tp.Literal["fr", "en"]
     
-    def __init__(self, output_path: Path = DATA_DIR):
-        self.default_path = output_path
+    def __init__(self, language: tp.Literal["fr", "en"], output_path: Path = OUTPUT_DIR, audio_path: Path = WAV_DIR,):
+        self.output_path = output_path
+        self.audio_path = audio_path
+        self.language = language
 
     def parse_audio(self, filename) -> List[dict]:
         """
@@ -110,7 +114,7 @@ class Parser:
 
         model = whisper.load_model("tiny", device="cpu")
 
-        result = whisper.transcribe(model, audio, language="fr")
+        result = whisper.transcribe(model, audio, language=self.language)
 
         # Parse the json output in result, and build words
         words = []
@@ -122,5 +126,5 @@ class Parser:
         df = pd.DataFrame(words)
         df.to_csv(self.output_path / f"{filename}.csv")
 
-        return words
+        return df
     
