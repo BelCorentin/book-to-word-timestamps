@@ -83,31 +83,29 @@ import json
 import logging
 import pydantic
 from pathlib import Path
+import pandas as pd
 
 from typing import Dict, List, Tuple
 from pydantic import BaseModel
 
 import whisper_timestamped as whisper
 
-
-class Word(BaseModel):
-    start: float
-    end: float
-    text: str
+from defaults import DATA_DIR, OUTPUT_DIR, TEXT_DIR, WAV_DIR
 
 class Parser:
 
-    default_path: str
+    output_path: Path
+    audio_path: Path
     
-    def __init__(self, default_path: str):
-        self.default_path = default_path
+    def __init__(self, output_path: Path = DATA_DIR):
+        self.default_path = output_path
 
-    def parse_audio(self, file) -> List[Word]:
+    def parse_audio(self, filename) -> List[dict]:
         """
         Parse the audio file and return a list of words with their start and end time.
         """
 
-        audio_path = Path(self.default_path) / file
+        audio_path = Path(self.audio_path) / filename
         audio = whisper.load_audio(audio_path)
 
         model = whisper.load_model("tiny", device="cpu")
@@ -118,6 +116,11 @@ class Parser:
         words = []
         for segment in result["segments"]:
             for word in segment["words"]:
-                words.append(Word(start=word["start"], end=word["end"], text=word["text"]))
+                words.append(dict(start=word["start"], end=word["end"], text=word["text"]))
+
+        # Create a df from the words, and save it to the output path
+        df = pd.DataFrame(words)
+        df.to_csv(self.output_path / f"{filename}.csv")
+
         return words
     

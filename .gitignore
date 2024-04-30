@@ -3,6 +3,11 @@ data/
 
 
 .txt
+.wav
+.csv
+.json
+.pkl
+.tsv
 
 __pycache__/
 
